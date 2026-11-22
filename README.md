@@ -1,43 +1,81 @@
-# Encrypted data payment starter
+# Fiber Unlock Vault
 
-A browser-only Buyer and Seller using Fiber and CKB Testnet. The full walkthrough is at https://www.fiber.world/docs/build/encrypted-data-payment.
+Pay-to-unlock **files and research briefs** on Fiber (CKB Testnet). A seller lists something with a public title and a **free preview**, picks a price, and shares an encrypted offer. The buyer pays the Fiber invoice through Bottle. Settling the payment reveals the invoice preimage, and **that preimage is the AES-256-GCM key** that decrypts the content in the buyer's browser.
 
-## Run locally
+Built on the official [Fiber encrypted-data-payment starter](https://www.fiber.world/docs/build/encrypted-data-payment). The first commit in this repo is the unmodified starter, so `git diff HEAD~1` (or the commit history) shows exactly what changed.
 
-Use Node.js 22.18 or newer and npm. Extract the archive, then run these commands inside `encrypted-data-payment`:
+## Use case
+
+A researcher sells a short paid brief or a file (PDF, image, dataset, markdown) to one buyer:
+
+1. **Seller** writes a title and free preview, adds paid text **or uploads a file** (up to 512 KB), and picks a price from 1 to 10 CKB.
+2. The app encrypts the content in the browser and creates a Fiber invoice whose preimage is the encryption key.
+3. The seller hands over the **public offer** (copy/paste, download a `.json` file, or one-click "Hand to buyer" for demos). It contains the ciphertext and invoice, never the key.
+4. **Buyer** loads the offer and sees the listing card (title, preview, price, file name/size), confirms that decryption without the key is rejected, and pays.
+5. The receipt shows the amount, routing fee, payment hash, and a **key proof**: `SHA-256(revealed preimage) == payment hash`.
+6. The buyer unlocks the content. Text is shown inline, images are previewed, and any file can be downloaded with its original name.
+
+## What changed from the starter
+
+| Area | Starter | Fiber Unlock Vault |
+|---|---|---|
+| Content | Fixed text sample | Paid text **or any file** up to 512 KB, with download after unlock |
+| Price | Fixed 1 CKB | Seller picks **1-10 CKB**. The buyer checks the invoice amount against the listing |
+| Public metadata | None | **Listing**: title, free preview, file name, MIME type, size, price |
+| Tamper resistance | Ciphertext only | Listing + payment hash bound as **AES-GCM additional data**. Editing the preview, title, price or file name, or swapping in another invoice's hash, makes decryption fail even with the real key |
+| Invoice check | Network, 1 CKB, payment hash | Also checks the listed price and the **seller-signed invoice description** (`Unlock: <title>`) |
+| Key handling | Key generated during encryption | Key and `payment_hash = SHA-256(key)` generated first, so the hash can be bound into the ciphertext. The app aborts if the node returns a different hash |
+| Receipt | Amount, fee, hash | Adds a local **preimage proof** check before unlocking |
+| Offer transport | Copy/paste only | Copy, **download/load `.json` file**, or hand to buyer in the same page |
+| Offer format | v2, hex ciphertext | **v3** with `app` id, listing and base64 ciphertext (~33% smaller than hex). The parser checks that ciphertext length = size + 16-byte GCM tag |
+| UI | Single-page tutorial panels | Step tracker, seller studio, listing card, locked/unlocked states, receipt panel |
+| Tests | 9 payment-safety tests | Those 9 (updated for the listing) + **7 new** tests: file round-trip, key never in offer, random key rejected, listing tamper rejected, price/description enforcement, malformed-offer rejection, listing policy |
+
+Unchanged on purpose: the starter's channel opening, node session locking, and payment safety logic (attempt recorded before send, no automatic resubmission, status recovery after refresh) in `lib/fiber.ts`, `lib/node-session.ts` and `lib/payment-submission.ts`.
+
+### Files
+
+- `lib/crypto.ts`: AES-256-GCM over bytes with additional data, base64, SHA-256, preimage proof.
+- `lib/listing.ts` (new): listing type, validation policy, canonical AAD, invoice description.
+- `lib/offer.ts`: v3 offer creation and strict parsing.
+- `lib/payment.ts`: price- and description-aware invoice validation.
+- `lib/bottle.ts` (new): Bottle constants, split out so the logic can run under `node --test`.
+- `app/page.tsx`, `app/globals.css`: the Vault UI.
+- `vault.test.mjs` (new), `payment.test.mjs` (updated).
+
+## Run it
+
+Requires Node.js 22.18+ and npm. Use `localhost` or HTTPS: the Fiber WASM node needs cross-origin isolation, which `next.config.mjs` provides.
 
 ```sh
 npm install
 npm run dev
 ```
 
-Open http://localhost:3001. Use `localhost` or HTTPS: the WASM runtime requires a secure context, SharedArrayBuffer, Web Locks, and cross-origin isolation. `next.config.mjs` supplies the isolation headers. Browser extensions or a proxy that strips those headers can prevent startup.
+Open http://localhost:3001, then:
 
-## Use the starter
+1. **Start node** for Buyer A and Seller C. Copy each funding address into the [CKB Testnet Faucet](https://faucet.nervos.org/). Each node needs **more than 500 Testnet CKB** (500 for the channel plus the fee).
+2. **Open 500 CKB channel** on both and press **Refresh status** until both show `CHANNEL_READY` (can take several minutes).
+3. In **Seller studio**, edit the listing or switch to **Paid file**, choose a price, then **Encrypt & create invoice**.
+4. **Hand to buyer** (or copy/download the offer), then **Validate offer**.
+5. **Decrypt without key**: it must be rejected.
+6. **Pay**, then **Unlock with revealed key** and download the file.
 
-Start each node, copy its funding address to the linked faucet, and request enough Testnet CKB for 500 CKB of channel funding plus the on-chain transaction fee. Channel V2 reserves 100 CKB, leaving 400 CKB to meet Bottle’s auto-accept minimum. Open both channels and check their status until each reports `CHANNEL_READY`. Confirmation can take several minutes.
+If Bottle lacks inbound balance toward the seller, use the optional **Send 5 CKB transfer** in the Liquidity card. If a payment stays pending, use **Check payment status** instead of paying again.
 
-The channel balances show whether Bottle already has inbound liquidity. The 5 CKB transfer is an optional experiment if that balance already covers the purchase. Its button checks an existing transfer before sending another.
+These are separate nodes from the ones on fiber.world (browser storage is per site), so they need their own faucet funding. Testnet only: never send Mainnet CKB.
 
-Create an encrypted offer, copy the public JSON into the Buyer field, validate it, and test decryption without the key. Then pay its 1 CKB Invoice and decrypt the result. The receipt shows the actual routing fee; the configured maximum is 1 CKB.
-
-## Resume and troubleshoot
-
-- After refreshing, start the same saved nodes, revalidate the restored offer, and choose **Check payment status**. A completed or pending attempt is never automatically submitted again. An explicit retry is available only after the node confirms failure.
-- An expired Invoice is blocked before recording a new attempt. If the node explicitly rejects submission and confirms no payment record exists, the rejected attempt is cleared; choose **Start another offer** to create a fresh Invoice. Timeouts, worker failures, and unavailable status reads keep the attempt locked for status checking.
-- Keep one tab per saved node. Browser storage holds node identities and public offer/payment progress; clearing it can lose access to funded channels. AES keys and decrypted output are not saved by the application. A settled key is recovered through `getPayment`.
-- If a 5 CKB transfer was interrupted before its hash returned, the button blocks another transfer. Review the Seller's payment history (`listPayments`) to identify the result before deliberately clearing its `fiber-docs:encrypted-inbound:<seller identifier>` session entry.
-- If a channel is slow, check its status or reconnect it. The existing channel is reused. Do not clear its storage or fund a replacement to resolve a wait.
-- Faucet requests and network confirmations can take longer than expected. Check the faucet transaction and refresh the channel status once funds arrive.
-
-## Code and checks
-
-`lib/offer.ts` creates the public payload. `lib/payment.ts` checks the decoded Invoice's network, amount, and payment hash and records an attempt before submission. `lib/progress.ts` restores public data only for matching saved node identities. `lib/node-session.ts` prevents concurrent runtimes from opening the same saved node.
+## Checks
 
 ```sh
 npm run typecheck
-npm test
+npm test        # 16 tests
 npm run build
 ```
 
-The application catches action errors and displays them inline. If a payment outcome is unknown, check the existing attempt instead of initiating a replacement.
+## Security notes and limits
+
+- Payment proves the buyer received **the key that matches this ciphertext and listing**. It does not prove the content is good. The free preview is the seller's claim.
+- Content is limited to 512 KB so the offer fits in sessionStorage and the clipboard. Larger files would store the ciphertext elsewhere (IPFS or a static host) and put its hash in the listing.
+- AES keys and decrypted content are never written to storage. The settled key can be recovered later through `getPayment`.
+- One buyer per invoice: the key is public to whoever pays, so selling to many buyers needs one key/invoice per buyer (or hold invoices).

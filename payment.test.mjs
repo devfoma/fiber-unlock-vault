@@ -3,12 +3,14 @@ import test from 'node:test';
 import { payForOffer, validateOffer } from './lib/payment.ts';
 
 const hash = `0x${'a'.repeat(64)}`;
-const offer = { invoice: 'fibt-example', paymentHash: hash, lastHop: {} };
+const listing = { title: 'Example brief', priceShannons: '0x5f5e100' };
+const description = { description: 'Unlock: Example brief' };
+const offer = { invoice: 'fibt-example', paymentHash: hash, lastHop: {}, listing };
 function fixture(status = 'Success') {
   const calls = [];
   const result = { status, payment_hash: hash, fee: '0x0' };
   const node = {
-    parseInvoice: async () => ({ invoice: { currency: 'Fibt', amount: '0x5f5e100', data: { payment_hash: hash } } }),
+    parseInvoice: async () => ({ invoice: { currency: 'Fibt', amount: '0x5f5e100', data: { payment_hash: hash, attrs: [description] } } }),
     sendPayment: async () => { calls.push('send'); return result; },
     getPayment: async () => { calls.push('check'); return result; },
     waitForPayment: async () => result,
@@ -16,7 +18,7 @@ function fixture(status = 'Success') {
   return { node, calls, result };
 }
 test('mismatched currency, amount, or payment hash blocks submission', async () => {
-  for (const change of [{ currency: 'Fibb' }, { amount: '0x1' }, { data: { payment_hash: '0xother' } }]) {
+  for (const change of [{ currency: 'Fibb' }, { amount: '0x1' }, { data: { payment_hash: '0xother', attrs: [description] } }, { data: { payment_hash: hash, attrs: [{ description: 'Unlock: Something else' }] } }, { data: { payment_hash: hash, attrs: [] } }]) {
     const { node, calls } = fixture();
     const original = node.parseInvoice;
     node.parseInvoice = async () => ({ invoice: { ...(await original()).invoice, ...change } });
@@ -53,7 +55,7 @@ test('an expired Invoice is rejected before recording or submitting a new paymen
   const { node, calls } = fixture();
   const original = node.parseInvoice;
   node.parseInvoice = async () => ({ invoice: { ...(await original()).invoice,
-    data: { payment_hash: hash, timestamp: '0x0', attrs: [{ expiry_time: '0x1' }] } } });
+    data: { payment_hash: hash, timestamp: '0x0', attrs: [description, { expiry_time: '0x1' }] } } });
   await assert.rejects(payForOffer(node, offer, '', () => calls.push('record')), /expired/);
   assert.deepEqual(calls, []);
 });
@@ -89,7 +91,7 @@ test('settled payments can still be recovered after their Invoice expires', asyn
   const { node, calls, result } = fixture('Success');
   const original = node.parseInvoice;
   node.parseInvoice = async () => ({ invoice: { ...(await original()).invoice,
-    data: { payment_hash: hash, timestamp: '0x0', attrs: [{ expiry_time: '0x1' }] } } });
+    data: { payment_hash: hash, timestamp: '0x0', attrs: [description, { expiry_time: '0x1' }] } } });
   assert.equal(await payForOffer(node, offer, hash, () => assert.fail('Do not record or resend')), result);
   assert.deepEqual(calls, ['check']);
 });
