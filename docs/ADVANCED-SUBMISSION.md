@@ -12,7 +12,7 @@ The tutorial ended with a challenge: *sell a research brief with a free summary,
 
 > **✍️ My reflection: what I'd like to build**
 >
-> I would build a global library for secrets, mainly code and research. Anyone can upload and earn, and anyone who needs something pays to unlock it. Fiber Unlock Vault is a first step toward that.
+> I would build a global library for secrets, mainly code and research. Anyone can upload and earn, and anyone who needs something pays to unlock it.
 
 ---
 
@@ -47,7 +47,7 @@ I funded two new nodes (separate from my tutorial nodes, because browser storage
 
 > **✍️ My reflection: a problem I ran into**
 >
-> I expected the channels to open on the first click. Instead the channel failed with "waiting for peer to send Init message", and later a node crashed. That was scary. Retrying and reloading brought everything back, and the app now waits for Bottle's handshake so the first error doesn't happen again.
+> When the channel failed to open and a node crashed, it was scary.
 
 ---
 
