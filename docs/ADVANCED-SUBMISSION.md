@@ -4,13 +4,11 @@
 
 Repo: [github.com/devfoma/fiber-unlock-vault](https://github.com/devfoma/fiber-unlock-vault) · Network: CKB Testnet · Date: 23 November 2026
 
-This is the story of turning the tutorial's starter kit into my own pay-to-unlock app, and then running a real Testnet purchase through it. Each chapter shows what happened, with screenshots, and my reflection at that point.
-
 ---
 
-## Chapter 1: The idea
+## Step 1: My idea
 
-The tutorial ended with a challenge: *sell a research brief with a free summary, or offer a paid file download.* **Fiber Unlock Vault** does both. A seller lists a paid brief or **any file** with a public title and a **free preview**, and sets their own price. When the buyer's Fiber payment settles, it reveals the invoice preimage, and that preimage **is** the AES-256-GCM key.
+The tutorial ended with a challenge: *sell a research brief with a free summary, or offer a paid file download.* I built **Fiber Unlock Vault** to do both. A seller lists a paid brief or **any file** with a public title and a **free preview**, and sets their own price. When the buyer's Fiber payment settles, it reveals the invoice preimage, and that preimage **is** the AES-256-GCM key.
 
 > **✍️ My reflection: what I'd like to build**
 >
@@ -18,9 +16,9 @@ The tutorial ended with a challenge: *sell a research brief with a free summary,
 
 ---
 
-## Chapter 2: What I changed in the starter
+## Step 2: What I changed in the starter
 
-The repo's first commit is the **unmodified starter**, so the second commit shows exactly what's new.
+My repo's first commit is the **unmodified starter**, so the second commit shows exactly what I added.
 
 | Area | Starter | Fiber Unlock Vault |
 |---|---|---|
@@ -33,17 +31,17 @@ The repo's first commit is the **unmodified starter**, so the second commit show
 | Offer handoff | Copy/paste | Copy, download/load `.json`, or one-click "Hand to buyer" |
 | Tests | 9 | 16 (7 new: file round-trip, key never in the offer, tamper rejection, price enforcement, and more) |
 
-The starter's payment safety logic is unchanged: the attempt is recorded before sending, nothing is resubmitted automatically, and status can be recovered after a refresh.
+I kept the starter's payment safety logic unchanged: the attempt is recorded before sending, nothing is resubmitted automatically, and status can be recovered after a refresh.
 
 ---
 
-## Chapter 3: Getting it running, and what broke
+## Step 3: I got it running, and fixed what broke
 
-I funded two new nodes (these are separate from the tutorial's, because browser storage is per site) and opened channels to Bottle. A few things went wrong along the way:
+I funded two new nodes (separate from my tutorial nodes, because browser storage is per site) and opened channels to Bottle. A few things went wrong:
 
-1. **"Waiting for peer to send Init message."** The app asked Bottle to open a channel a moment before Bottle had finished its connection handshake. Clicking again a few seconds later worked. **Fix:** the app now waits for Bottle to appear as a peer and retries while the handshake is pending.
-2. **Seller showed as "not connected" right after starting**, so the Encrypt button stayed disabled until Refresh was pressed. **Fix:** the same wait-for-peer step runs when a node starts.
-3. **A node crashed** (`WASM … unreachable`) with four Fiber nodes running in one browser at once (two for the tutorial, two for the Vault). Reloading the page brought both nodes back with their keys and channels intact.
+1. **"Waiting for peer to send Init message."** My app asked Bottle to open a channel a moment before Bottle had finished its connection handshake. Clicking again a few seconds later worked. **My fix:** the app now waits for Bottle to appear as a peer and retries while the handshake is pending.
+2. **My seller showed as "not connected" right after starting**, so the Encrypt button stayed disabled until I pressed Refresh. **My fix:** the same wait-for-peer step now runs when a node starts.
+3. **A node crashed** (`WASM … unreachable`) while I had four Fiber nodes running in one browser at once (two for the tutorial, two for the Vault). I reloaded the page, and both nodes came back with their keys and channels intact.
 
 ![Both Vault channels CHANNEL_READY](advanced-demo/01-vault-channels-ready.jpg)
 
@@ -53,9 +51,9 @@ I funded two new nodes (these are separate from the tutorial's, because browser 
 
 ---
 
-## Chapter 4: Listing a paid brief for 3 CKB
+## Step 4: I listed a paid brief for 3 CKB
 
-In the **Seller studio** I wrote a title and a free preview, added the paid content and chose a price of **3 CKB**. One click encrypted it and created the invoice.
+In my **Seller studio** I wrote a title and a free preview, added the paid content and chose a price of **3 CKB**. One click encrypted it and created the invoice.
 
 ![Seller studio, 3 CKB listing](advanced-demo/02-seller-listing-3ckb.jpg)
 
@@ -65,17 +63,17 @@ The resulting **v3 offer** contains the listing, the ciphertext and the invoice.
 
 ---
 
-## Chapter 5: The buyer sees what they're buying, locked
+## Step 5: As the buyer, I saw what I was buying, locked
 
-The buyer validated the offer: Testnet invoice, signed for this listing, charging exactly the listed price. They then saw the **listing card**, with title, free preview, file details, price and payment hash, marked **Locked**. Decrypting without the key was rejected.
+I validated the offer as the buyer: Testnet invoice, signed for this listing, charging exactly the listed price. I then saw the **listing card**, with title, free preview, file details, price and payment hash, marked **Locked**. My attempt to decrypt without the key was rejected.
 
 ![Locked listing and decryption rejected](advanced-demo/04-buyer-locked-listing-rejected.jpg)
 
 ---
 
-## Chapter 6: Paying and proving the key
+## Step 6: I paid and checked the key
 
-The buyer paid **3 CKB** plus a 0.003 CKB routing fee through Bottle. Before unlocking, the app checked that the revealed preimage hashes to the payment hash.
+I paid **3 CKB** plus a 0.003 CKB routing fee through Bottle. Before unlocking, my app checked that the revealed preimage hashes to the payment hash.
 
 Payment hash: `0xa749b1619a48876c7d535c2ece82709b34c6b9d2d6959086f3714f4552b976d1`
 
@@ -87,9 +85,9 @@ Payment hash: `0xa749b1619a48876c7d535c2ece82709b34c6b9d2d6959086f3714f4552b976d
 
 ---
 
-## Chapter 7: Unlocked
+## Step 7: I unlocked the content
 
-The content decrypted, and AES-GCM confirmed that both the content and its listing are exactly what the seller encrypted. The buyer can read it inline or download it under its original file name.
+The content decrypted, and AES-GCM confirmed that both the content and its listing are exactly what I encrypted as the seller. I can read it inline or download it under its original file name.
 
 ![Unlocked content](advanced-demo/06-unlocked-content.jpg)
 
