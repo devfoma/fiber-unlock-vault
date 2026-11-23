@@ -4,7 +4,7 @@ Pay-to-unlock **files and research briefs** on Fiber (CKB Testnet). A seller lis
 
 Built on the official [Fiber encrypted-data-payment starter](https://www.fiber.world/docs/build/encrypted-data-payment). The first commit in this repo is the unmodified starter, so `git diff HEAD~1` (or the commit history) shows exactly what changed.
 
-**Live Testnet run with screenshots:** [docs/PROOFS.md](docs/PROOFS.md)
+**Campaign submissions (storyline with screenshots):** [Basic quest](docs/BASIC-SUBMISSION.md) · [Advanced quest](docs/ADVANCED-SUBMISSION.md)
 
 ![Fiber Unlock Vault](docs/advanced-demo/00-overview-all-steps-done.jpg)
 
