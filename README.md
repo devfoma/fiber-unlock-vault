@@ -4,6 +4,10 @@ Pay-to-unlock **files and research briefs** on Fiber (CKB Testnet). A seller lis
 
 Built on the official [Fiber encrypted-data-payment starter](https://www.fiber.world/docs/build/encrypted-data-payment). The first commit in this repo is the unmodified starter, so `git diff HEAD~1` (or the commit history) shows exactly what changed.
 
+**Live Testnet run with screenshots:** [docs/PROOFS.md](docs/PROOFS.md)
+
+![Fiber Unlock Vault](docs/advanced-demo/00-overview-all-steps-done.jpg)
+
 ## Use case
 
 A researcher sells a short paid brief or a file (PDF, image, dataset, markdown) to one buyer:
@@ -60,6 +64,8 @@ Open http://localhost:3001, then:
 4. **Hand to buyer** (or copy/download the offer), then **Validate offer**.
 5. **Decrypt without key**: it must be rejected.
 6. **Pay**, then **Unlock with revealed key** and download the file.
+
+The app connects to Bottle and waits for its handshake before opening a channel, retrying the brief "waiting for peer to send Init message" window instead of failing.
 
 If Bottle lacks inbound balance toward the seller, use the optional **Send 5 CKB transfer** in the Liquidity card. If a payment stays pending, use **Check payment status** instead of paying again.
 

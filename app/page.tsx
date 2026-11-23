@@ -4,7 +4,7 @@ import { channelFundingGuidance } from '../lib/channel-funding';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { scriptToAddress, type Channel, type FiberBrowserNode, type GetPaymentResult } from '@fiber-pay/sdk/browser';
 import { decryptBytes, preimageMatches, toHex } from '../lib/crypto';
-import { bottle, channelFundingCkb, connectAndOpenChannel, readChannel, ready, startRole } from '../lib/fiber';
+import { bottle, channelFundingCkb, connectAndOpenChannel, connectBottle, readChannel, ready, startRole } from '../lib/fiber';
 import { createOffer, parseOffer, type EncryptedOffer } from '../lib/offer';
 import { payForOffer, validateOffer } from '../lib/payment';
 import { ckbToShannonsHex, formatBytes, formatCkb, listingAad, MAX_CONTENT_BYTES, MAX_PRICE_CKB, MIN_PRICE_CKB, safeFileName } from '../lib/listing';
@@ -109,7 +109,7 @@ export default function Page() {
     nodes.current[role] = started;
     const info = await started.nodeInfo();
     setAddresses((previous) => ({ ...previous, [role]: scriptToAddress(info.default_funding_lock_script, 'testnet') }));
-    if (await readChannel(started)) await started.connectPeer(bottle);
+    if (await readChannel(started)) await connectBottle(started);
     await refresh(role);
   }
 

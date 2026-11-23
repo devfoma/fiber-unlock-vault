@@ -57,16 +57,40 @@ export function ready(channel: Channel) {
   return channel.state.state_name.replace(/[^a-z0-9]/gi, '').toLowerCase() === 'channelready';
 }
 
-export async function connectAndOpenChannel(node: FiberBrowserNode) {
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** True while Bottle has accepted the connection but not yet sent its Init message. */
+const awaitingInit = (error: unknown) => error instanceof Error && /Init message|feature not found/i.test(error.message);
+
+/** Connect to Bottle and wait (up to ~10s) until it appears in the peer list. */
+export async function connectBottle(node: FiberBrowserNode) {
   await node.connectPeer(bottle);
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const { peers } = await node.listPeers();
+    if (peers.some((peer) => peer.pubkey.replace(/^0x/i, '').toLowerCase() === bottle.pubkey.slice(2))) return;
+    await sleep(500);
+  }
+}
+
+export async function connectAndOpenChannel(node: FiberBrowserNode) {
+  await connectBottle(node);
   const existing = await readChannel(node);
   if (!existing) {
     await requireNewChannelFunding(node);
-    await node.openChannel({
-      pubkey: bottle.pubkey,
-      funding_amount: `0x${(channelFundingCkb * 100_000_000n).toString(16)}`,
-      public: true,
-    });
+    // A fresh connection needs a moment for Bottle's Init handshake; retry instead of failing.
+    for (let attempt = 1; ; attempt += 1) {
+      try {
+        await node.openChannel({
+          pubkey: bottle.pubkey,
+          funding_amount: `0x${(channelFundingCkb * 100_000_000n).toString(16)}`,
+          public: true,
+        });
+        break;
+      } catch (error) {
+        if (!awaitingInit(error) || attempt >= 8) throw error;
+        await sleep(2_000);
+      }
+    }
   }
   return readChannel(node);
 }
