@@ -20,9 +20,8 @@ This is the story of one run through the tutorial, told step by step. Each chapt
 I started **Buyer A** and **Seller C**, two Fiber nodes running as WebAssembly inside the page. Each one got a public key and a Testnet funding address. I sent 10,000 Testnet CKB from the [Nervos faucet](https://faucet.nervos.org/) to each address. It confirmed in about 30 seconds, and both nodes showed 10,000 CKB on-chain.
 
 > **✍️ My reflection: having the explanation next to each step**
-> *(Required question. How did it feel to have the explanation alongside each interactive step? If you've done an earlier Fiber tutorial with the demo at the top and the walkthrough below, which format worked better and why?)*
 >
-> _Write your answer here._
+> Having the explanation right next to each step was helpful. I've done an earlier Fiber tutorial, and I like this format more.
 
 ---
 
@@ -41,9 +40,8 @@ Both channels went through all six opening stages and reached `CHANNEL_READY` in
 </details>
 
 > **✍️ My reflection: was any step unclear?**
-> *(Optional. Was there a step where you weren't sure what to do next or why it mattered? The 500 CKB breakdown and the 150 CKB route limit are good candidates.)*
 >
-> _Write your answer here, or delete this box if you don't pick this question._
+> I wasn't sure why each channel needs to be funded.
 
 ---
 
@@ -82,9 +80,8 @@ Buyer A paid the invoice. Before sending anything, the buyer checked that the in
 ![Channel balances after payment](basic-quest/03b-channel-balances-after-payment.jpg)
 
 > **✍️ My reflection: what stood out about paying to unlock?**
-> *(Optional. What surprised you or stood out about paying to unlock the report?)*
 >
-> _Write your answer here, or delete this box if you don't pick this question._
+> What stood out to me is that the payment didn't need a new on-chain transaction.
 
 ---
 
@@ -103,13 +100,14 @@ Both nodes connected successfully. The round-trip time was 42 ms.
 ![Decrypted result](basic-quest/04-decrypted-result.jpg)
 
 > **✍️ My reflection: what would I build, and what would I change?**
-> *(Optional, pick either or both. What would you like to build with this pay-to-unlock flow? If you could change one thing about the tutorial, what would it be?)*
 >
-> _Write your answer here, or delete this box if you don't pick these questions._
+> I would build a global library for secrets, mainly code and research. Anyone can upload and earn, and anyone who needs something pays to unlock it.
+>
+> If I could change one thing about the tutorial, I would add video explanations.
 
 ---
 
 ### Required by the form but not in this page
 
 - **Telegram handle** goes in the CKBoost form itself.
-- **Reflection:** answer the required question plus at least two others, in the boxes above.
+- **Reflection:** the boxes above, also pasted into the form.

@@ -12,10 +12,9 @@ This is the story of turning the tutorial's starter kit into my own pay-to-unloc
 
 The tutorial ended with a challenge: *sell a research brief with a free summary, or offer a paid file download.* **Fiber Unlock Vault** does both. A seller lists a paid brief or **any file** with a public title and a **free preview**, and sets their own price. When the buyer's Fiber payment settles, it reveals the invoice preimage, and that preimage **is** the AES-256-GCM key.
 
-> **✍️ My reflection: why this idea?**
-> *(Optional. What would you like to build with this pay-to-unlock flow, and why did you pick this one?)*
+> **✍️ My reflection: what I'd like to build**
 >
-> _Write your answer here._
+> I would build a global library for secrets, mainly code and research. Anyone can upload and earn, and anyone who needs something pays to unlock it. Fiber Unlock Vault is a first step toward that.
 
 ---
 
@@ -49,9 +48,8 @@ I funded two new nodes (these are separate from the tutorial's, because browser 
 ![Both Vault channels CHANNEL_READY](advanced-demo/01-vault-channels-ready.jpg)
 
 > **✍️ My reflection: a problem I ran into**
-> *(Optional. If you ran into a problem, what did you expect, what happened, and how did you resolve it?)*
 >
-> _Write your answer here._
+> I expected the channels to open on the first click. Instead the channel failed with "waiting for peer to send Init message", and later a node crashed. That was scary. Retrying and reloading brought everything back, and the app now waits for Bottle's handshake so the first error doesn't happen again.
 
 ---
 
@@ -84,9 +82,8 @@ Payment hash: `0xa749b1619a48876c7d535c2ece82709b34c6b9d2d6959086f3714f4552b976d
 ![Receipt with key proof](advanced-demo/05-receipt-key-proof.jpg)
 
 > **✍️ My reflection: what stood out?**
-> *(Optional. What surprised you or stood out about paying to unlock?)*
 >
-> _Write your answer here._
+> What stood out to me is that the payment didn't need a new on-chain transaction.
 
 ---
 
@@ -99,9 +96,8 @@ The content decrypted, and AES-GCM confirmed that both the content and its listi
 ![All seven steps complete](advanced-demo/00-overview-all-steps-done.jpg)
 
 > **✍️ My reflection: the format, and what I'd change**
-> *(Required question. How did it feel to have the explanations alongside each interactive step? If you've tried a previous Fiber tutorial with the demo at the top and the walkthrough below, which format worked better and why? Optionally: if you could change one thing about the tutorial, what would it be?)*
 >
-> _Write your answer here._
+> Having the explanation right next to each step was helpful. I've done an earlier Fiber tutorial, and I like this format more. I wasn't sure why each channel needs to be funded. If I could change one thing, I would add video explanations.
 
 ---
 
